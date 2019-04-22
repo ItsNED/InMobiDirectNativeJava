@@ -1,6 +1,7 @@
 package com.example.inmobidirectnativejava;
 
 import android.support.annotation.NonNull;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -13,6 +14,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiNative;
@@ -25,13 +27,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
-    private static final String TAG = "Inmobi";//MainActivity.class.getSimpleName();
+    private static final String TAG = "Inmobi";
 
     private ViewGroup mContainer;
 
     private InMobiNative nativeAd;
+
+    private SwipeRefreshLayout refresh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,15 +50,21 @@ public class MainActivity extends AppCompatActivity {
 
         loadAd();
 
+        Toast.makeText(MainActivity.this, "SWIPE DOWN TO REFRESH.", Toast.LENGTH_SHORT).show();
+
     }
 
     private void initView(){
+        Log.d(TAG, "initView");
+        refresh = findViewById(R.id.refresh);
+        refresh.setOnRefreshListener(this);
         mContainer = (ViewGroup)findViewById(R.id.container);
     }
 
 
 
     private void initSDK(){
+        Log.d(TAG, "initSDK");
         JSONObject consentObject = new JSONObject();
         try {
             // Provide correct consent value to sdk which is obtained by User
@@ -70,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private View loadAdIntoView(@NonNull final InMobiNative inMobiNative) {
+        Log.d(TAG, "loadAdIntoView");
         View adView = LayoutInflater.from(MainActivity.this).inflate(R.layout.layout_ad, null);
 
         ImageView icon = (ImageView) adView.findViewById(R.id.adIcon);
@@ -79,12 +90,14 @@ public class MainActivity extends AppCompatActivity {
         FrameLayout content = (FrameLayout) adView.findViewById(R.id.adContent);
         RatingBar ratingBar = (RatingBar) adView.findViewById(R.id.adRating);
 
+
         Picasso.with(MainActivity.this)
                 .load(inMobiNative.getAdIconUrl())
                 .into(icon);
         title.setText(inMobiNative.getAdTitle());
         description.setText(inMobiNative.getAdDescription());
         action.setText(inMobiNative.getAdCtaText());
+
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         MainActivity.this.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -169,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void createNativeAds(){
+        Log.d(TAG, "createNativeAds");
         nativeAd = new InMobiNative(MainActivity.this, 1553753205807L, adListener);
 
         nativeAd.setVideoEventListener(new VideoEventListener() {
@@ -176,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
             public void onVideoCompleted(InMobiNative inMobiNative) {
                 super.onVideoCompleted(inMobiNative);
                 Log.d(TAG, "onVideoCompleted: ");
+                // TODO: Do something after ad completed.
             }
 
             @Override
@@ -194,7 +209,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadAd(){
+        Log.d(TAG, "loadAd");
         nativeAd.load();
+    }
+
+    private void clearAd(){
+        Log.d(TAG, "clearAd");
+        mContainer.removeAllViews();
+        nativeAd.destroy();
+    }
+
+    private void reloadAd(){
+        Log.d(TAG, "reloadAd");
+        clearAd();
+        createNativeAds();
+        loadAd();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy");
+        nativeAd.destroy();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onRefresh() {
+        Log.d(TAG, "onRefresh");
+        reloadAd();
+        refresh.setRefreshing(false);
     }
 }
 

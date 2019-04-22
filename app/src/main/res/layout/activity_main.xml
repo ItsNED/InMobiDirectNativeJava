@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="5dp"
+<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/refresh"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/container"
-    android:clickable="true">
-</LinearLayout>
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/container"
+        android:clickable="true">
+
+
+    </LinearLayout>
+
+</android.support.v4.widget.SwipeRefreshLayout>
